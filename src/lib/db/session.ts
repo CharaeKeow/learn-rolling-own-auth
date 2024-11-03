@@ -9,12 +9,14 @@ import { sha256 } from '@oslojs/crypto/sha2';
 import { type User, type Session, sessionTable, userTable } from './schema';
 import db from '.';
 import { eq } from 'drizzle-orm';
+import { cookies } from 'next/headers';
 
 export type SessionValidationResult =
 	| { session: Session; user: User }
 	| { session: null; user: null };
 
-const THIRTY_DAYS_IN_MILLISECONDS = 1000 * 60 * 60 * 24 * 30;
+export const SESSION_COOKIE_NAME = 'session';
+export const THIRTY_DAYS_IN_MILLISECONDS = 1000 * 60 * 60 * 24 * 30;
 
 export function generateSessionToken(): string {
 	// Create a Uint8Array with 20 bytes, each element/byte initialized to 0.
@@ -97,4 +99,31 @@ export async function validateSessionToken(
 
 export async function invalidateSession(sessionId: string): Promise<void> {
 	await db.delete(sessionTable).where(eq(sessionTable.id, sessionId));
+}
+
+export async function setSessionTokenCookie(
+	token: string,
+	expiresAt: Date,
+): Promise<void> {
+	const cookieStore = cookies();
+
+	cookieStore.set(SESSION_COOKIE_NAME, token, {
+		httpOnly: true,
+		sameSite: 'lax',
+		secure: process.env.NODE_ENV === 'production',
+		expires: expiresAt,
+		path: '/',
+	});
+}
+
+export async function deleteSessionTokenCookie(): Promise<void> {
+	const cookieStore = cookies();
+
+	cookieStore.set(SESSION_COOKIE_NAME, '', {
+		httpOnly: true,
+		sameSite: 'lax',
+		secure: process.env.NODE_ENV === 'production',
+		maxAge: 0,
+		path: '/',
+	});
 }
