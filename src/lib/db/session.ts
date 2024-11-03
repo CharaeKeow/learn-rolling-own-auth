@@ -136,7 +136,7 @@ export const getCurrentSession = cache(
 		const cookieStore = cookies();
 		const token = cookieStore.get(SESSION_COOKIE_NAME)?.value ?? null;
 
-		if (token !== null) {
+		if (token === null) {
 			return { session: null, user: null };
 		}
 
