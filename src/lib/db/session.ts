@@ -16,8 +16,7 @@ export type SessionValidationResult =
 	| { session: Session; user: User }
 	| { session: null; user: null };
 
-export const SESSION_COOKIE_NAME = 'session';
-export const THIRTY_DAYS_IN_MILLISECONDS = 1000 * 60 * 60 * 24 * 30;
+import { SESSION_COOKIE_NAME, THIRTY_DAYS_IN_MILLISECONDS } from './constant';
 
 export function generateSessionToken(): string {
 	// Create a Uint8Array with 20 bytes, each element/byte initialized to 0.

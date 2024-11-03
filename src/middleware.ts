@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 import {
 	SESSION_COOKIE_NAME,
 	THIRTY_DAYS_IN_MILLISECONDS,
-} from './lib/db/session';
+} from './lib/db/constant';
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
 	if (request.method === 'GET') {
