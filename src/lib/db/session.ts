@@ -10,6 +10,7 @@ import { type User, type Session, sessionTable, userTable } from './schema';
 import db from '.';
 import { eq } from 'drizzle-orm';
 import { cookies } from 'next/headers';
+import { cache } from 'react';
 
 export type SessionValidationResult =
 	| { session: Session; user: User }
@@ -127,3 +128,20 @@ export async function deleteSessionTokenCookie(): Promise<void> {
 		path: '/',
 	});
 }
+
+/**
+ * Helper function to validate session token and return current session
+ */
+export const getCurrentSession = cache(
+	async (): Promise<SessionValidationResult> => {
+		const cookieStore = cookies();
+		const token = cookieStore.get(SESSION_COOKIE_NAME)?.value ?? null;
+
+		if (token !== null) {
+			return { session: null, user: null };
+		}
+
+		const result = validateSessionToken(token);
+		return result;
+	},
+);
