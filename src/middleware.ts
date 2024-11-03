@@ -1,10 +1,32 @@
 import { NextResponse } from 'next/server';
 
 import type { NextRequest } from 'next/server';
+import {
+	SESSION_COOKIE_NAME,
+	THIRTY_DAYS_IN_MILLISECONDS,
+} from './lib/db/session';
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
 	if (request.method === 'GET') {
-		return NextResponse.next();
+		const response = NextResponse.next();
+		const token = request.cookies.get(SESSION_COOKIE_NAME)?.value ?? null;
+
+		if (token !== null) {
+			// Only extend cookie expiration on GET requests since we can be sure
+			// a new session wasn't set when handling the request.
+			// This is a limitation of Next middleware - i.e. it can't detect if a new
+			// cookie was set inside server actions or route handlers. Hence only extend
+			// cookie expiration in `GET` request for safety
+			response.cookies.set(SESSION_COOKIE_NAME, token, {
+				path: '/',
+				maxAge: THIRTY_DAYS_IN_MILLISECONDS / 1000, // because the cookies maxAge is in seconds'
+				sameSite: 'lax',
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+			});
+		}
+
+		return response;
 	}
 
 	const originHeader = request.headers.get('Origin');
