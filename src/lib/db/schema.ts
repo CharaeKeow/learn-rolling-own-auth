@@ -3,6 +3,8 @@ import { InferSelectModel } from 'drizzle-orm';
 
 export const userTable = pgTable('user', {
 	id: serial('id').primaryKey(),
+	githubId: integer('githubId').unique().notNull(),
+	username: text('username').notNull(),
 });
 
 export const sessionTable = pgTable('session', {
